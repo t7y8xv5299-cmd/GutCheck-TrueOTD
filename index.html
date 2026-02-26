@@ -8,219 +8,195 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>GutCheck TrueOTD</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<!-- Barcode scanning (PDF417 on window stickers) -->
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
-<!-- OCR for VIN text plates -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
 <style>
 :root {
-  --bg:     #080a08;
-  --s1:     #0e110e;
-  --s2:     #141814;
-  --s3:     #1c221c;
-  --border: #252c25;
-  --text:   #edf2ed;
-  --muted:  #6b7a6b;
-  --dim:    #3d473d;
-  --lime:   #b8f000;
-  --lime2:  #86b000;
-  --amber:  #f0a800;
-  --red:    #f03c30;
-  --blue:   #48b8f0;
-  --safe:   #40d878;
-  --font-d: 'Barlow Condensed', sans-serif;
-  --font-b: 'Barlow', sans-serif;
-  --font-m: 'JetBrains Mono', monospace;
+  --bg:#080a08; --s1:#0e110e; --s2:#141814; --s3:#1c221c;
+  --border:#252c25; --text:#edf2ed; --muted:#6b7a6b; --dim:#3d473d;
+  --lime:#b8f000; --lime2:#86b000; --amber:#f0a800; --red:#f03c30;
+  --blue:#48b8f0; --safe:#40d878;
+  --fd:'Barlow Condensed',sans-serif;
+  --fb:'Barlow',sans-serif;
+  --fm:'JetBrains Mono',monospace;
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; }
-body { background:var(--bg); color:var(--text); font-family:var(--font-b); font-size:14px; line-height:1.5; min-height:100vh; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;line-height:1.5;min-height:100vh}
 
-/* ── TOPBAR ── */
-.topbar { position:sticky; top:0; z-index:100; background:rgba(8,10,8,.96); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 20px; height:56px; display:flex; align-items:center; justify-content:space-between; }
-.logo { font-family:var(--font-d); font-size:22px; font-weight:800; letter-spacing:1px; line-height:1; }
-.logo .gc{color:var(--text)} .logo .sep{color:var(--muted);margin:0 3px} .logo .otd{color:var(--lime)}
-.logo-tag { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-top:2px; }
-.status-pill { font-family:var(--font-d); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:4px 12px; border-radius:20px; border:1px solid var(--border); color:var(--muted); }
-.status-pill.live { background:rgba(184,240,0,.1); border-color:var(--lime2); color:var(--lime); }
-.status-pill.scanning { background:rgba(72,184,240,.1); border-color:var(--blue); color:var(--blue); }
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,10,8,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:1px;line-height:1}
+.logo .gc{color:var(--text)}.logo .sep{color:var(--muted);margin:0 3px}.logo .otd{color:var(--lime)}
+.logo-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.spill{font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+.spill.live{background:rgba(184,240,0,.1);border-color:var(--lime2);color:var(--lime)}
+.spill.ai{background:rgba(72,184,240,.1);border-color:var(--blue);color:var(--blue)}
 
-/* ── LAYOUT ── */
-.wrap { max-width:780px; margin:0 auto; padding:20px 16px 60px; }
+/* LAYOUT */
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 60px}
 
-/* ── INPUT CARD ── */
-.input-card { background:var(--s1); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:20px; }
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px}
 
-/* ── TOP TABS (3 modes) ── */
-.mode-tabs { display:grid; grid-template-columns:1fr 1fr 1fr; background:var(--bg); border-bottom:1px solid var(--border); }
-.mtab { padding:12px 8px; text-align:center; cursor:pointer; font-family:var(--font-d); font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); border-bottom:2px solid transparent; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px; }
-.mtab.active { color:var(--lime); border-bottom-color:var(--lime); background:rgba(184,240,0,.04); }
-.mtab-icon { font-size:15px; }
+/* TABS */
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--bg);border-bottom:1px solid var(--border)}
+.tab{padding:12px 6px;text-align:center;cursor:pointer;font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.tab.active{color:var(--lime);border-bottom-color:var(--lime);background:rgba(184,240,0,.04)}
+.tab-icon{font-size:14px}
 
-/* ── PANELS ── */
-.panel { display:none; padding:18px 18px 0; }
-.panel.active { display:block; }
+/* PANELS */
+.panel{display:none;padding:18px 18px 0}
+.panel.active{display:block}
 
-/* ── CAMERA VIEWPORT ── */
-.cam-area { position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:16/7; margin-bottom:12px; border:1px solid var(--border); }
-#videoFeed { width:100%; height:100%; object-fit:cover; display:block; }
-#snapCanvas { display:none; position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
-.cam-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); font-size:12px; text-align:center; padding:16px; }
-.cam-placeholder .big { font-size:36px; margin-bottom:4px; }
+/* ── STICKER SCAN (Tab 1) ── */
+.scan-hero{background:linear-gradient(135deg,#0a1a02,#0d2004);border:1px solid rgba(184,240,0,.15);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center}
+.scan-hero-icon{font-size:40px;margin-bottom:10px}
+.scan-hero-title{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--lime);margin-bottom:5px}
+.scan-hero-sub{font-size:12px;color:var(--muted);line-height:1.6;max-width:340px;margin:0 auto}
 
-/* BARCODE OVERLAY */
-.bc-overlay { position:absolute; inset:0; pointer-events:none; display:none; align-items:center; justify-content:center; }
-.bc-overlay.show { display:flex; }
-.bc-box { width:85%; height:45%; border:2px solid var(--lime); border-radius:6px; position:relative; box-shadow:0 0 0 2000px rgba(0,0,0,.5); }
-.bc-label { position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-family:var(--font-d); font-size:10px; font-weight:700; letter-spacing:2px; color:var(--lime); white-space:nowrap; }
-.bc-scan-line { position:absolute; left:4px; right:4px; height:2px; background:linear-gradient(90deg,transparent,var(--lime),transparent); animation:scanLine 1.8s ease-in-out infinite; }
-@keyframes scanLine { 0%{top:8%} 50%{top:85%} 100%{top:8%} }
+/* Upload zone */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;position:relative}
+.upload-zone:hover{border-color:var(--lime);background:rgba(184,240,0,.03)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-icon{font-size:32px;margin-bottom:8px}
+.uz-title{font-family:var(--fd);font-size:15px;font-weight:700;margin-bottom:4px}
+.uz-sub{font-size:11px;color:var(--muted)}
 
-/* VIN TEXT OVERLAY */
-.vin-overlay { position:absolute; inset:0; pointer-events:none; display:none; align-items:center; justify-content:center; }
-.vin-overlay.show { display:flex; }
-.vin-box { width:80%; height:30%; border:2px solid var(--amber); border-radius:6px; position:relative; box-shadow:0 0 0 2000px rgba(0,0,0,.5); }
-.vin-box-label { position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-family:var(--font-d); font-size:10px; font-weight:700; letter-spacing:2px; color:var(--amber); white-space:nowrap; }
+/* Camera capture */
+.cam-area{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:12px;border:1px solid var(--border);display:none}
+.cam-area.show{display:block}
+#stickerVideo{width:100%;height:100%;object-fit:cover;display:block}
+#stickerCanvas{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam-guide{position:absolute;inset:8px;border:2px solid rgba(184,240,0,.6);border-radius:8px;pointer-events:none}
+.cam-guide-label{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:2px;color:var(--lime);white-space:nowrap}
 
-/* STATUS BAR */
-.scan-status { display:none; align-items:center; gap:10px; background:var(--s2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:12px; }
-.scan-status.show { display:flex; }
-.spin { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--lime); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.scan-status-text { font-size:12px; color:var(--muted); flex:1; }
-.scan-status-text b { color:var(--lime); }
-.scan-pct { font-family:var(--font-m); font-size:11px; color:var(--lime); }
+/* Preview image */
+.preview-wrap{position:relative;border-radius:10px;overflow:hidden;margin-bottom:14px;border:1px solid var(--border);display:none}
+.preview-wrap.show{display:block}
+.preview-wrap img{width:100%;display:block;max-height:280px;object-fit:contain;background:#000}
+.preview-retake{position:absolute;top:8px;right:8px;background:rgba(8,10,8,.8);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 10px;cursor:pointer;font-family:var(--fd);font-weight:700;letter-spacing:.5px}
+.preview-retake:hover{border-color:var(--red);color:var(--red)}
 
-/* VIN CONFIRM */
-.vin-confirm { display:none; background:rgba(184,240,0,.07); border:1px solid rgba(184,240,0,.25); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
-.vin-confirm.show { display:block; }
-.vc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.vc-label { font-size:11px; color:var(--muted); }
-.vc-label b { color:var(--lime); }
-.vc-source { font-family:var(--font-d); font-size:9px; font-weight:700; letter-spacing:1.5px; padding:2px 8px; border-radius:3px; }
-.vc-source.barcode { background:rgba(184,240,0,.15); color:var(--lime); }
-.vc-source.ocr     { background:rgba(240,168,0,.15); color:var(--amber); }
-.vc-clear { font-size:11px; color:var(--muted); cursor:pointer; margin-left:10px; }
-.vc-clear:hover { color:var(--red); }
-.vc-field { width:100%; background:var(--bg); border:1px solid var(--lime2); border-radius:6px; color:var(--lime); font-family:var(--font-m); font-size:17px; letter-spacing:3px; padding:9px 12px; text-transform:uppercase; outline:none; transition:border-color .2s; }
-.vc-field:focus { border-color:var(--lime); }
-.vc-counter { font-size:11px; color:var(--muted); text-align:right; margin-top:4px; font-family:var(--font-m); }
-.vc-counter.ready { color:var(--lime); }
+/* AI processing */
+.ai-processing{display:none;background:rgba(72,184,240,.06);border:1px solid rgba(72,184,240,.2);border-radius:10px;padding:16px;margin-bottom:14px;text-align:center}
+.ai-processing.show{display:block}
+.ai-dots{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:8px}
+.ai-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;animation:pulse 1.4s ease-in-out infinite}
+.ai-dot:nth-child(2){animation-delay:.2s}.ai-dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.ai-label{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--blue);letter-spacing:1px}
+.ai-step{font-size:11px;color:var(--muted);margin-top:4px}
 
-/* BUTTONS */
-.btn-row { display:flex; gap:8px; margin-bottom:14px; }
-.btn { flex:1; padding:11px 10px; border-radius:9px; border:none; cursor:pointer; font-family:var(--font-d); font-size:13px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap; }
-.btn.primary { background:var(--lime); color:#000; }
-.btn.primary:hover { background:#ccff00; transform:translateY(-1px); }
-.btn.secondary { background:var(--s3); color:var(--text); border:1px solid var(--border); }
-.btn.secondary:hover { border-color:var(--lime); }
-.btn.amber-btn { background:rgba(240,168,0,.12); color:var(--amber); border:1px solid rgba(240,168,0,.3); }
-.btn.amber-btn:hover { background:rgba(240,168,0,.2); }
-.btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
+/* Extracted data review */
+.extracted{display:none;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
+.extracted.show{display:block}
+.ext-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ext-title{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.ext-badge{font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:3px;background:rgba(72,184,240,.15);color:var(--blue)}
+.ext-vin{font-family:var(--fm);font-size:16px;letter-spacing:3px;color:var(--lime);background:var(--bg);border:1px solid var(--lime2);border-radius:6px;padding:8px 12px;margin-bottom:10px;width:100%;outline:none}
+.ext-vin:focus{border-color:var(--lime)}
+.ext-row{display:grid;grid-template-columns:1fr 1fr 70px;gap:8px;margin-bottom:8px}
+.ext-field{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--fm);font-size:13px;padding:8px 10px;outline:none;transition:border-color .2s}
+.ext-field:focus{border-color:var(--lime)}
+.ext-fl{font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.addons-ext{margin-top:8px}
+.addon-ext-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}
+.addon-ext-name{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 10px;outline:none}
+.addon-ext-name:focus{border-color:var(--amber)}
+.addon-ext-price{width:85px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--fm);font-size:12px;padding:7px 10px;outline:none}
+.addon-ext-price:focus{border-color:var(--amber)}
+.del-x{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;width:28px;height:28px;font-size:13px;flex-shrink:0;transition:all .15s}
+.del-x:hover{border-color:var(--red);color:var(--red)}
+.add-more{background:none;border:1px dashed var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:6px 12px;font-family:var(--fb);transition:all .15s;margin-top:2px}
+.add-more:hover{border-color:var(--amber);color:var(--amber)}
 
-/* SCAN MODE SELECTOR (inside barcode/ocr panels) */
-.scan-method { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
-.sm-btn { padding:14px 10px; border-radius:10px; border:1px solid var(--border); background:var(--s2); cursor:pointer; text-align:center; transition:all .2s; }
-.sm-btn.active { border-color:var(--lime); background:rgba(184,240,0,.08); }
-.sm-btn.active.amber-mode { border-color:var(--amber); background:rgba(240,168,0,.08); }
-.sm-icon { font-size:22px; margin-bottom:5px; }
-.sm-title { font-family:var(--font-d); font-size:13px; font-weight:700; margin-bottom:2px; }
-.sm-btn.active .sm-title { color:var(--lime); }
-.sm-btn.active.amber-mode .sm-title { color:var(--amber); }
-.sm-desc { font-size:10px; color:var(--muted); line-height:1.4; }
+/* BTN ROW */
+.btn-row{display:flex;gap:8px;margin-bottom:14px}
+.btn{flex:1;padding:11px 10px;border-radius:9px;border:none;cursor:pointer;font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.btn.lime{background:var(--lime);color:#000}
+.btn.lime:hover{background:#ccff00;transform:translateY(-1px)}
+.btn.ghost{background:var(--s3);color:var(--text);border:1px solid var(--border)}
+.btn.ghost:hover{border-color:var(--lime)}
+.btn.blue-btn{background:rgba(72,184,240,.12);color:var(--blue);border:1px solid rgba(72,184,240,.3)}
+.btn.blue-btn:hover{background:rgba(72,184,240,.22)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
 
-/* HINT */
-.scan-hint { font-size:11px; color:var(--muted); text-align:center; margin-bottom:12px; line-height:1.55; }
-.scan-hint b { color:var(--text); }
+/* MANUAL TAB */
+.vin-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--fm);font-size:18px;letter-spacing:3px;padding:12px 16px;text-transform:uppercase;outline:none;transition:border-color .2s;margin-bottom:4px}
+.vin-input:focus{border-color:var(--lime)}
+.vc{font-size:11px;color:var(--muted);text-align:right;font-family:var(--fm);margin-bottom:12px}
+.vc.ready{color:var(--lime)}
+.nf{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--fm);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s}
+.nf:focus{border-color:var(--lime)}
+.fl{font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.frow{display:grid;grid-template-columns:1fr 1fr 70px;gap:8px;margin-bottom:12px}
+.addon-rows .ar{display:flex;gap:8px;margin-bottom:7px;align-items:center}
+.add-btn{background:none;border:1px dashed var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;padding:6px 14px;font-family:var(--fb);transition:all .15s}
+.add-btn:hover{border-color:var(--lime);color:var(--lime)}
 
-/* STICKER FIELDS */
-.sticker-fields { border-top:1px solid var(--border); padding-top:16px; margin-bottom:16px; }
-.field-label { font-family:var(--font-d); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:block; }
-.fields-row { display:grid; grid-template-columns:1fr 1fr 90px; gap:8px; margin-bottom:10px; }
-.nf { width:100%; background:var(--s2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--font-m); font-size:14px; padding:9px 12px; outline:none; transition:border-color .2s; letter-spacing:0; }
-.nf:focus { border-color:var(--lime); }
-.addon-section { margin-top:4px; }
-#addonRows .addon-row { display:flex; gap:8px; margin-bottom:7px; align-items:center; }
-.addon-name { flex:1; font-size:13px !important; letter-spacing:0 !important; }
-.addon-price { width:90px !important; }
-.add-btn { background:none; border:1px dashed var(--border); border-radius:6px; color:var(--muted); cursor:pointer; font-size:12px; padding:6px 14px; font-family:var(--font-b); transition:all .15s; }
-.add-btn:hover { border-color:var(--lime); color:var(--lime); }
-.del-btn { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); cursor:pointer; width:30px; height:30px; font-size:14px; flex-shrink:0; transition:all .15s; }
-.del-btn:hover { border-color:var(--red); color:var(--red); }
+/* SHARED BOTTOM */
+.bot{padding:0 18px 18px}
+.err{background:rgba(240,60,48,.1);border:1px solid rgba(240,60,48,.3);border-radius:8px;padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:12px;display:none}
+.err.show{display:block}
+.go-btn{width:100%;background:var(--lime);border:none;border-radius:10px;color:#000;cursor:pointer;font-family:var(--fd);font-size:18px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:15px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.go-btn:hover{background:#ccff00;transform:translateY(-1px);box-shadow:0 4px 20px rgba(184,240,0,.2)}
+.go-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 
-/* VIN FIELD (manual tab) */
-.vin-input { width:100%; background:var(--s2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--font-m); font-size:18px; letter-spacing:3px; padding:12px 16px; text-transform:uppercase; outline:none; transition:border-color .2s; }
-.vin-input:focus { border-color:var(--lime); }
-.vin-counter { font-size:11px; color:var(--muted); text-align:right; margin-top:4px; font-family:var(--font-m); }
-.vin-counter.ready { color:var(--lime); }
-
-/* ERROR */
-.err-bar { background:rgba(240,60,48,.1); border:1px solid rgba(240,60,48,.3); border-radius:8px; padding:10px 14px; color:var(--red); font-size:13px; margin-bottom:12px; display:none; }
-.err-bar.show { display:block; }
-
-/* ANALYZE BUTTON */
-.analyze-btn { width:100%; background:var(--lime); border:none; border-radius:10px; color:#000; cursor:pointer; font-family:var(--font-d); font-size:18px; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:15px; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:2px; }
-.analyze-btn:hover { background:#ccff00; transform:translateY(-1px); box-shadow:0 4px 20px rgba(184,240,0,.2); }
-.analyze-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
-.shared-bottom { padding:0 18px 18px; }
-
-/* ── RESULTS ── */
-#results { animation:fadeUp .4s ease; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-.hero { display:grid; grid-template-columns:2fr 1fr 1fr; gap:2px; background:var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; }
-.hcell { background:var(--s1); padding:20px 18px; }
-.hcell.main { background:linear-gradient(135deg,#0a1a02,#0d2004); border:1px solid rgba(184,240,0,.15); }
-.hc-l { font-family:var(--font-d); font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
-.hc-v { font-family:var(--font-d); font-size:36px; font-weight:800; line-height:1; letter-spacing:-1px; }
-.hc-v.lime{color:var(--lime)} .hc-v.dim{color:var(--dim)} .hc-v.amber{color:var(--amber)}
-.hc-s { font-size:11px; color:var(--muted); margin-top:5px; }
-.save-pct { display:inline-block; background:rgba(184,240,0,.12); border:1px solid rgba(184,240,0,.3); border-radius:20px; color:var(--lime); font-family:var(--font-d); font-size:12px; font-weight:700; padding:3px 10px; margin-top:7px; }
-.vstrip { background:var(--s1); border:1px solid var(--border); border-radius:10px; padding:13px 16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-.vtitle { font-family:var(--font-d); font-size:20px; font-weight:800; }
-.vmeta { display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; }
-.vchip { font-size:10px; background:var(--s2); border:1px solid var(--border); border-radius:4px; padding:2px 7px; color:var(--muted); }
+/* RESULTS */
+#results{animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hero{display:grid;grid-template-columns:2fr 1fr 1fr;gap:2px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.hcell{background:var(--s1);padding:20px 16px}
+.hcell.main{background:linear-gradient(135deg,#0a1a02,#0d2004);border:1px solid rgba(184,240,0,.15)}
+.hc-l{font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.hc-v{font-family:var(--fd);font-size:34px;font-weight:800;line-height:1;letter-spacing:-1px}
+.hc-v.lime{color:var(--lime)}.hc-v.dim{color:var(--dim)}.hc-v.amber{color:var(--amber)}
+.hc-s{font-size:11px;color:var(--muted);margin-top:5px}
+.save-pct{display:inline-block;background:rgba(184,240,0,.12);border:1px solid rgba(184,240,0,.3);border-radius:20px;color:var(--lime);font-family:var(--fd);font-size:12px;font-weight:700;padding:3px 10px;margin-top:7px}
+.vstrip{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.vtitle{font-family:var(--fd);font-size:20px;font-weight:800}
+.vmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.vchip{font-size:10px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--muted)}
 .vchip b{color:#9aaa9a}
-.mkt-tag { font-family:var(--font-d); font-size:10px; font-weight:700; letter-spacing:1px; padding:4px 12px; border-radius:20px; white-space:nowrap; background:rgba(240,168,0,.12); color:var(--amber); border:1px solid rgba(240,168,0,.25); }
-.tbl-wrap { background:var(--s1); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+.mkt-tag{font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;white-space:nowrap;background:rgba(240,168,0,.12);color:var(--amber);border:1px solid rgba(240,168,0,.25)}
+.tbl-wrap{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
 table{width:100%;border-collapse:collapse}
 thead tr{background:var(--s2)}
-th { font-family:var(--font-d); font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding:10px 13px; text-align:left; border-bottom:1px solid var(--border); }
+th{font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 13px;text-align:left;border-bottom:1px solid var(--border)}
 th:nth-child(n+3){text-align:right}
-td { padding:10px 13px; border-bottom:1px solid rgba(37,44,37,.5); vertical-align:middle; font-size:13px; }
+td{padding:10px 13px;border-bottom:1px solid rgba(37,44,37,.5);vertical-align:middle;font-size:13px}
 tr:last-child td{border-bottom:none}
-td:nth-child(n+3){text-align:right;font-family:var(--font-m);font-size:12px}
+td:nth-child(n+3){text-align:right;font-family:var(--fm);font-size:12px}
 .row-pay td:first-child{border-left:3px solid var(--safe);padding-left:10px}
 .row-neg td:first-child{border-left:3px solid var(--amber);padding-left:10px}
 .row-ref td:first-child{border-left:3px solid var(--red);padding-left:10px}
 .row-fix td:first-child{border-left:3px solid var(--blue);padding-left:10px}
 .row-total td{background:rgba(184,240,0,.05);font-weight:600}
 .row-sticker td{color:var(--muted)}
-.iname{font-weight:600;color:var(--text)} .inote{font-size:11px;color:var(--muted);margin-top:2px}
-.tag { display:inline-block; font-family:var(--font-d); font-size:9px; font-weight:700; letter-spacing:1px; padding:2px 7px; border-radius:3px; }
+.iname{font-weight:600;color:var(--text)}.inote{font-size:11px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;font-family:var(--fd);font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:3px}
 .t-pay{background:rgba(64,216,120,.15);color:var(--safe)}
 .t-neg{background:rgba(240,168,0,.15);color:var(--amber)}
 .t-ref{background:rgba(240,60,48,.15);color:var(--red)}
 .t-fix{background:rgba(72,184,240,.15);color:var(--blue)}
 .strike{text-decoration:line-through;color:var(--muted)}
-.lime{color:var(--lime)} .amber{color:var(--amber)} .red{color:var(--red)}
-.play { background:var(--s1); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:14px; }
-.play-hdr { font-family:var(--font-d); font-size:13px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.lime{color:var(--lime)}.amber{color:var(--amber)}.red{color:var(--red)}
+.play{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.play-hdr{font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .step{display:flex;gap:9px;align-items:flex-start}
-.sn{background:var(--lime);color:#000;font-family:var(--font-d);font-size:10px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sn{background:var(--lime);color:#000;font-family:var(--fd);font-size:10px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .st{font-size:12px;color:#8a9a8a;line-height:1.55}
-.st b{color:var(--text)} .st .m{color:var(--lime);font-family:var(--font-m);font-size:11px}
+.st b{color:var(--text)}.st .m{color:var(--lime);font-family:var(--fm);font-size:11px}
 .foot{font-size:10px;color:var(--dim);margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
 
 @media(max-width:580px){
   .hero{grid-template-columns:1fr 1fr}
   .hcell.main{grid-column:1/-1}
   .hc-v{font-size:28px}
-  .fields-row{grid-template-columns:1fr 1fr}
+  .frow,.ext-row{grid-template-columns:1fr 1fr}
   .steps{grid-template-columns:1fr}
   th:nth-child(4),td:nth-child(4){display:none}
 }
-@media(max-width:400px){.fields-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -230,244 +206,201 @@ td:nth-child(n+3){text-align:right;font-family:var(--font-m);font-size:12px}
     <div class="logo"><span class="gc">GutCheck</span><span class="sep">|</span><span class="otd">TrueOTD</span></div>
     <div class="logo-tag">Conflict-Free Car Price Intelligence</div>
   </div>
-  <div class="status-pill" id="statusPill">📍 Ready</div>
+  <div class="spill" id="spill">📍 Ready</div>
 </div>
 
 <div class="wrap">
-  <div class="input-card">
+<div class="card">
 
-    <!-- ── THREE MODE TABS ── -->
-    <div class="mode-tabs">
-      <div class="mtab active" id="tab-barcode" onclick="switchTab('barcode')">
-        <span class="mtab-icon">▦</span> Scan Barcode
-      </div>
-      <div class="mtab" id="tab-photo" onclick="switchTab('photo')">
-        <span class="mtab-icon">📷</span> Photo VIN
-      </div>
-      <div class="mtab" id="tab-manual" onclick="switchTab('manual')">
-        <span class="mtab-icon">⌨️</span> Enter VIN
-      </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-scan" onclick="switchTab('scan')">
+      <span class="tab-icon">🤖</span> Scan Sticker
     </div>
-
-    <!-- ══════════════════════════════════════════
-         TAB 1 — BARCODE SCAN
-         Reads PDF417 barcode on window sticker
-    ══════════════════════════════════════════ -->
-    <div class="panel active" id="panel-barcode">
-      <div class="scan-method">
-        <div class="sm-btn active" id="bc-live-btn" onclick="setBarcodeMode('live')">
-          <div class="sm-icon">📹</div>
-          <div class="sm-title">Live Camera</div>
-          <div class="sm-desc">Hold phone over barcode · auto-detects</div>
-        </div>
-        <div class="sm-btn" id="bc-upload-btn" onclick="setBarcodeMode('upload')">
-          <div class="sm-icon">🖼</div>
-          <div class="sm-title">Upload Photo</div>
-          <div class="sm-desc">Photo of sticker barcode from camera roll</div>
-        </div>
-      </div>
-
-      <!-- Camera view -->
-      <div class="cam-area" id="bcCamArea">
-        <video id="videoFeed" autoplay playsinline muted></video>
-        <canvas id="snapCanvas"></canvas>
-        <div class="bc-overlay" id="bcOverlay">
-          <div class="bc-box">
-            <div class="bc-label">POINT AT WINDOW STICKER BARCODE</div>
-            <div class="bc-scan-line"></div>
-          </div>
-        </div>
-        <div class="cam-placeholder" id="bcPlaceholder">
-          <div class="big">▦</div>
-          <div>Tap <b style="color:var(--text)">Start Scanner</b> below</div>
-          <div style="font-size:10px;margin-top:4px">Aim at the <b style="color:var(--lime)">PDF417 barcode</b> on the window sticker</div>
-        </div>
-      </div>
-
-      <div class="scan-status" id="bcStatus">
-        <div class="spin"></div>
-        <div class="scan-status-text" id="bcStatusText">Scanning for barcode…</div>
-      </div>
-
-      <div class="scan-hint">
-        Find the <b>barcode on the window sticker</b> (lower right, wide rectangular). Hold steady — auto-detects in 1–3 sec.
-      </div>
-
-      <!-- Barcode buttons -->
-      <div class="btn-row" id="bcBtnRow">
-        <button class="btn primary" id="bcStartBtn" onclick="startBarcodeScanner()">▶ Start Scanner</button>
-        <button class="btn secondary" id="bcStopBtn" onclick="stopBarcodeScanner()" style="display:none">⏹ Stop</button>
-        <label class="btn secondary" id="bcUploadLabel" style="display:none;cursor:pointer">
-          📁 Choose Photo
-          <input type="file" accept="image/*" id="bcUploadInput" onchange="decodeBarcodeFromFile(event)" style="display:none">
-        </label>
-        <button class="btn secondary" id="bcRetakeBtn" onclick="resetBarcodeScanner()" style="display:none">↺ Retry</button>
-      </div>
-
-      <!-- VIN confirm (shared, shown after any successful read) -->
-      <div class="vin-confirm" id="vinConfirm">
-        <div class="vc-top">
-          <div>
-            <div class="vc-label"><b>✓ VIN captured</b> — verify before analyzing</div>
-            <div style="margin-top:3px"><span class="vc-source barcode" id="vcSource">BARCODE</span></div>
-          </div>
-          <div class="vc-clear" onclick="clearVin()">✕ Clear</div>
-        </div>
-        <input type="text" class="vc-field" id="vinConfirmField" maxlength="17"
-          oninput="onConfirmType(this)" placeholder="17-character VIN">
-        <div class="vc-counter" id="vcCounter">0 / 17</div>
-      </div>
-
-      <!-- Sticker details -->
-      <div class="sticker-fields" id="bcStickerFields">
-        <div class="field-label">Sticker Prices</div>
-        <div class="fields-row">
-          <div>
-            <div class="field-label">Base MSRP ($)</div>
-            <input type="number" class="nf" id="msrpBC" placeholder="e.g. 42,500">
-          </div>
-          <div>
-            <div class="field-label">Doc Fee ($)</div>
-            <input type="number" class="nf" id="docBC" placeholder="e.g. 999">
-          </div>
-          <div>
-            <div class="field-label">State</div>
-            <input type="text" class="nf" id="stateBC" value="FL" maxlength="2" style="text-transform:uppercase">
-          </div>
-        </div>
-      </div>
+    <div class="tab" id="tab-barcode" onclick="switchTab('barcode')">
+      <span class="tab-icon">▦</span> Barcode
     </div>
-
-    <!-- ══════════════════════════════════════════
-         TAB 2 — PHOTO OF VIN TEXT
-         OCR reads VIN plate or sticker text
-    ══════════════════════════════════════════ -->
-    <div class="panel" id="panel-photo">
-      <div class="scan-method">
-        <div class="sm-btn active amber-mode" id="ph-cam-btn" onclick="setPhotoMode('camera')">
-          <div class="sm-icon">📷</div>
-          <div class="sm-title">Take Photo</div>
-          <div class="sm-desc">Camera captures VIN plate live</div>
-        </div>
-        <div class="sm-btn" id="ph-upload-btn" onclick="setPhotoMode('upload')">
-          <div class="sm-icon">🖼</div>
-          <div class="sm-title">Upload Photo</div>
-          <div class="sm-desc">Use photo already in camera roll</div>
-        </div>
-      </div>
-
-      <div class="cam-area" id="phCamArea">
-        <video id="videoFeedOCR" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:block"></video>
-        <canvas id="snapCanvasOCR" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover"></canvas>
-        <div class="vin-overlay" id="vinOverlay">
-          <div class="vin-box">
-            <div class="vin-box-label">ALIGN VIN NUMBER HERE</div>
-          </div>
-        </div>
-        <div class="cam-placeholder" id="phPlaceholder">
-          <div class="big">📷</div>
-          <div>Tap <b style="color:var(--text)">Start Camera</b> below</div>
-          <div style="font-size:10px;margin-top:4px">Aim at dashboard VIN plate, door jamb sticker, or window label</div>
-        </div>
-      </div>
-
-      <div class="scan-status" id="phStatus">
-        <div class="spin" style="border-top-color:var(--amber)"></div>
-        <div class="scan-status-text" id="phStatusText">Reading VIN text…</div>
-        <div class="scan-pct" style="color:var(--amber)" id="phPct"></div>
-      </div>
-
-      <div class="scan-hint">
-        Point at the <b>VIN plate on the dashboard</b> (visible through windshield), <b>door jamb sticker</b>, or VIN on the window sticker. Fill the frame with the VIN number.
-      </div>
-
-      <div class="btn-row" id="phBtnRow">
-        <button class="btn amber-btn" id="phStartBtn" onclick="startOCRCamera()">📷 Start Camera</button>
-        <button class="btn amber-btn" id="phCaptureBtn" onclick="captureOCR()" style="display:none">⊙ Capture</button>
-        <label class="btn secondary" id="phUploadLabel" style="display:none;cursor:pointer">
-          📁 Choose Photo
-          <input type="file" accept="image/*" id="phUploadInput" onchange="handleOCRUpload(event)" style="display:none">
-        </label>
-        <button class="btn secondary" id="phRetakeBtn" onclick="resetOCRCamera()" style="display:none">↺ Retake</button>
-      </div>
-
-      <!-- VIN confirm for photo tab (same confirm widget, shown here too) -->
-      <div class="vin-confirm" id="vinConfirmPhoto">
-        <div class="vc-top">
-          <div>
-            <div class="vc-label"><b>✓ VIN read</b> — verify and correct if needed</div>
-            <div style="margin-top:3px"><span class="vc-source ocr" id="vcSourcePhoto">OCR TEXT</span></div>
-          </div>
-          <div class="vc-clear" onclick="clearVinPhoto()">✕ Clear</div>
-        </div>
-        <input type="text" class="vc-field" style="border-color:var(--amber);color:var(--amber)" id="vinConfirmPhotoField" maxlength="17"
-          oninput="onConfirmTypePhoto(this)" placeholder="17-character VIN">
-        <div class="vc-counter" id="vcCounterPhoto">0 / 17</div>
-      </div>
-
-      <div class="sticker-fields">
-        <div class="field-label">Sticker Prices</div>
-        <div class="fields-row">
-          <div>
-            <div class="field-label">Base MSRP ($)</div>
-            <input type="number" class="nf" id="msrpPhoto" placeholder="e.g. 42,500">
-          </div>
-          <div>
-            <div class="field-label">Doc Fee ($)</div>
-            <input type="number" class="nf" id="docPhoto" placeholder="e.g. 999">
-          </div>
-          <div>
-            <div class="field-label">State</div>
-            <input type="text" class="nf" id="statePhoto" value="FL" maxlength="2" style="text-transform:uppercase">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         TAB 3 — MANUAL ENTRY
-    ══════════════════════════════════════════ -->
-    <div class="panel" id="panel-manual">
-      <div style="margin-bottom:14px">
-        <div class="field-label">Vehicle Identification Number (VIN)</div>
-        <input type="text" class="vin-input" id="vinManual" maxlength="17"
-          placeholder="Enter 17-character VIN"
-          oninput="onVinType(this)">
-        <div class="vin-counter" id="vinCounter">0 / 17</div>
-      </div>
-      <div class="fields-row" style="margin-bottom:14px">
-        <div>
-          <div class="field-label">Base MSRP ($)</div>
-          <input type="number" class="nf" id="msrpManual" placeholder="e.g. 42,500">
-        </div>
-        <div>
-          <div class="field-label">Doc Fee ($)</div>
-          <input type="number" class="nf" id="docManual" placeholder="e.g. 999">
-        </div>
-        <div>
-          <div class="field-label">State</div>
-          <input type="text" class="nf" id="stateManual" value="FL" maxlength="2" style="text-transform:uppercase">
-        </div>
-      </div>
-      <div class="addon-section">
-        <div class="field-label" style="margin-bottom:8px">Dealer Add-Ons (from sticker)</div>
-        <div id="addonRows"></div>
-        <button class="add-btn" onclick="addRow()">+ Add dealer option</button>
-      </div>
-      <div style="height:16px"></div>
-    </div>
-
-    <!-- ── SHARED BOTTOM ── -->
-    <div class="shared-bottom">
-      <div class="err-bar" id="errBar"></div>
-      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
-        <span>⚡</span> Get My TrueOTD Price
-      </button>
+    <div class="tab" id="tab-manual" onclick="switchTab('manual')">
+      <span class="tab-icon">⌨️</span> Enter VIN
     </div>
   </div>
 
-  <div id="results"></div>
+  <!-- ═══════════════════════════════════════════
+       TAB 1 — FULL STICKER SCAN (AI)
+  ═══════════════════════════════════════════ -->
+  <div class="panel active" id="panel-scan">
+
+    <div class="scan-hero">
+      <div class="scan-hero-icon">🤖</div>
+      <div class="scan-hero-title">Full Sticker Scan</div>
+      <div class="scan-hero-sub">Take one photo of the window sticker. AI reads the VIN, MSRP, every dealer add-on and price, then runs the full analysis automatically.</div>
+    </div>
+
+    <!-- Upload or Camera -->
+    <div id="scanInputArea">
+      <div class="btn-row">
+        <button class="btn lime" onclick="startStickerCamera()">📷 Take Photo Now</button>
+        <label class="btn ghost" style="cursor:pointer">
+          📁 Upload Sticker Photo
+          <input type="file" accept="image/*" id="stickerUpload" onchange="handleStickerUpload(event)" style="display:none">
+        </label>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px;line-height:1.6">
+        Works with the full window sticker or just the pricing/VIN section.<br>
+        <b style="color:var(--text)">Tip:</b> Include the entire sticker in one shot for best results.
+      </div>
+    </div>
+
+    <!-- Live camera -->
+    <div class="cam-area" id="stickerCamArea">
+      <video id="stickerVideo" autoplay playsinline muted></video>
+      <canvas id="stickerCanvas"></canvas>
+      <div class="cam-guide"><div class="cam-guide-label">FIT ENTIRE STICKER IN FRAME</div></div>
+    </div>
+    <div class="btn-row" id="camBtnRow" style="display:none">
+      <button class="btn lime" id="captureBtn" onclick="captureSticker()">⊙ Capture Sticker</button>
+      <button class="btn ghost" onclick="cancelStickerCamera()">✕ Cancel</button>
+    </div>
+
+    <!-- Image preview -->
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" src="" alt="Sticker">
+      <div class="preview-retake" onclick="retakeSticker()">↺ Retake</div>
+    </div>
+
+    <!-- AI Processing indicator -->
+    <div class="ai-processing" id="aiProcessing">
+      <div class="ai-dots">
+        <div class="ai-dot"></div>
+        <div class="ai-dot"></div>
+        <div class="ai-dot"></div>
+      </div>
+      <div class="ai-label">🤖 AI Reading Sticker…</div>
+      <div class="ai-step" id="aiStep">Extracting VIN, MSRP, and dealer add-ons</div>
+    </div>
+
+    <!-- Extracted data review -->
+    <div class="extracted" id="extractedData">
+      <div class="ext-hdr">
+        <div class="ext-title">Extracted — Review &amp; Edit</div>
+        <div class="ext-badge">🤖 AI READ</div>
+      </div>
+
+      <div class="ext-fl">VIN (17 characters)</div>
+      <input type="text" class="ext-vin" id="extVin" maxlength="17"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'')">
+
+      <div class="ext-row">
+        <div>
+          <div class="ext-fl">Base MSRP ($)</div>
+          <input type="number" class="ext-field" id="extMsrp">
+        </div>
+        <div>
+          <div class="ext-fl">Doc Fee ($)</div>
+          <input type="number" class="ext-field" id="extDoc">
+        </div>
+        <div>
+          <div class="ext-fl">State</div>
+          <input type="text" class="ext-field" id="extState" maxlength="2" style="text-transform:uppercase">
+        </div>
+      </div>
+
+      <div class="ext-fl" style="margin-bottom:7px">Dealer Add-Ons</div>
+      <div class="addons-ext" id="extAddons"></div>
+      <button class="add-more" onclick="addExtAddon()">+ Add item</button>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB 2 — BARCODE
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-barcode">
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6">
+      📋 Scan the <b style="color:var(--text)">PDF417 barcode</b> on the lower-right of the window sticker. The barcode contains the VIN directly — fastest and most accurate method.
+    </div>
+
+    <div class="cam-area show" id="bcCamArea">
+      <video id="bcVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:none"></video>
+      <canvas id="bcCanvas" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></canvas>
+      <div id="bcPlaceholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);text-align:center;padding:16px;font-size:12px">
+        <div style="font-size:32px">▦</div>
+        <div>Tap <b style="color:var(--text)">Start Scanner</b> — hold phone over barcode</div>
+      </div>
+      <div id="bcOverlay" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center">
+        <div style="width:82%;height:45%;border:2px solid var(--lime);border-radius:6px;box-shadow:0 0 0 2000px rgba(0,0,0,.5);position:relative">
+          <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:2px;color:var(--lime);white-space:nowrap">POINT AT STICKER BARCODE</div>
+          <div style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--lime),transparent);animation:scanLine 1.8s ease-in-out infinite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="bcStatusBar" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--muted)"></div>
+
+    <div class="btn-row">
+      <button class="btn lime" id="bcStartBtn" onclick="startBarcode()">▶ Start Scanner</button>
+      <button class="btn ghost" id="bcStopBtn" onclick="stopBarcode()" style="display:none">⏹ Stop</button>
+      <label class="btn ghost" id="bcUploadLabel" style="cursor:pointer">
+        📁 Upload Photo
+        <input type="file" accept="image/*" id="bcUpload" onchange="decodeBarcodeFile(event)" style="display:none">
+      </label>
+      <button class="btn ghost" id="bcRetryBtn" onclick="resetBarcode()" style="display:none">↺ Retry</button>
+    </div>
+
+    <!-- VIN confirm -->
+    <div id="bcConfirm" style="display:none;background:rgba(184,240,0,.07);border:1px solid rgba(184,240,0,.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--muted)">✅ <b style="color:var(--lime)">VIN detected — verify below</b></div>
+        <span style="font-size:11px;color:var(--muted);cursor:pointer" onclick="clearBcVin()">✕ Clear</span>
+      </div>
+      <input type="text" id="bcVinField" maxlength="17"
+        style="width:100%;background:var(--bg);border:1px solid var(--lime2);border-radius:6px;color:var(--lime);font-family:var(--fm);font-size:16px;letter-spacing:3px;padding:8px 12px;text-transform:uppercase;outline:none"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'')">
+    </div>
+
+    <div class="frow">
+      <div><div class="fl">Base MSRP ($)</div><input type="number" class="nf" id="bcMsrp" placeholder="e.g. 42,500"></div>
+      <div><div class="fl">Doc Fee ($)</div><input type="number" class="nf" id="bcDoc" placeholder="e.g. 999"></div>
+      <div><div class="fl">State</div><input type="text" class="nf" id="bcState" value="FL" maxlength="2" style="text-transform:uppercase"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB 3 — MANUAL
+  ═══════════════════════════════════════════ -->
+  <div class="panel" id="panel-manual">
+    <div style="margin-bottom:14px">
+      <div class="fl">Vehicle Identification Number (VIN)</div>
+      <input type="text" class="vin-input" id="vinManual" maxlength="17"
+        oninput="onVinType(this)" placeholder="Enter 17-character VIN">
+      <div class="vc" id="vinCtr">0 / 17</div>
+    </div>
+    <div class="frow">
+      <div><div class="fl">Base MSRP ($)</div><input type="number" class="nf" id="msrpManual" placeholder="e.g. 42,500"></div>
+      <div><div class="fl">Doc Fee ($)</div><input type="number" class="nf" id="docManual" placeholder="e.g. 999"></div>
+      <div><div class="fl">State</div><input type="text" class="nf" id="stateManual" value="FL" maxlength="2" style="text-transform:uppercase"></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="fl" style="margin-bottom:8px">Dealer Add-Ons</div>
+      <div class="addon-rows" id="addonRows"></div>
+      <button class="add-btn" onclick="addManualRow()">+ Add dealer option</button>
+    </div>
+    <div style="height:4px"></div>
+  </div>
+
+  <!-- SHARED BOTTOM -->
+  <div class="bot">
+    <div class="err" id="errBar"></div>
+    <button class="go-btn" id="goBtn" onclick="analyze()">
+      <span>⚡</span> Get My TrueOTD Price
+    </button>
+  </div>
 </div>
+
+<div id="results"></div>
+</div>
+
+<style>@keyframes scanLine{0%{top:8%}50%{top:85%}100%{top:8%}}</style>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -486,7 +419,6 @@ const ADDON_INTEL={
   'multimedia screen protector':{cat:'ref',disc:100,note:'Dealer cost <$5'},
   'emergency':{cat:'ref',disc:100,note:'Amazon ~$25'},
   'phone cable':{cat:'ref',disc:100,note:'USB cables · cost <$5'},
-  'cable charge':{cat:'ref',disc:100,note:'USB cables · cost <$5'},
   'nitrogen':{cat:'ref',disc:100,note:'Free air works the same'},
   'vin etching':{cat:'ref',disc:100,note:'Insurance benefit is minimal'},
   'paint protection':{cat:'neg',disc:60,note:'Can DIY for $40'},
@@ -497,519 +429,426 @@ const ADDON_INTEL={
 // ═══════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════
-let activeTab = 'barcode';
-let barcodeStream = null;
-let ocrStream = null;
-let codeReader = null;
-let barcodeScanning = false;
-let addonCount = 0;
-let detectedVIN_bc = '';   // barcode tab VIN
-let detectedVIN_ph = '';   // photo tab VIN
+let activeTab='scan', stickerStream=null, bcStream=null, codeReader=null;
+let stickerImageB64='', addonExtCount=0, addonManualCount=0;
 
 // ═══════════════════════════════════════════════════════════════════
-// TAB SWITCHING
+// TABS
 // ═══════════════════════════════════════════════════════════════════
-function switchTab(tab) {
-  // Stop any active scanning
-  if (tab !== 'barcode') stopBarcodeScanner();
-  if (tab !== 'photo')   stopOCRCamera();
-
-  activeTab = tab;
-  ['barcode','photo','manual'].forEach(t => {
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-    document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+function switchTab(t){
+  if(t!=='scan') cancelStickerCamera();
+  if(t!=='barcode') stopBarcode();
+  activeTab=t;
+  ['scan','barcode','manual'].forEach(x=>{
+    document.getElementById(`tab-${x}`).classList.toggle('active',x===t);
+    document.getElementById(`panel-${x}`).classList.toggle('active',x===t);
   });
   hideErr();
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// TAB 1 — BARCODE SCANNER
-// Uses ZXing to decode PDF417 barcodes on window stickers
+// TAB 1 — STICKER SCAN (Claude AI Vision)
 // ═══════════════════════════════════════════════════════════════════
-let barcodeMode = 'live';
-
-function setBarcodeMode(mode) {
-  barcodeMode = mode;
-  document.getElementById('bc-live-btn').classList.toggle('active', mode === 'live');
-  document.getElementById('bc-upload-btn').classList.toggle('active', mode === 'upload');
-  stopBarcodeScanner();
-
-  if (mode === 'upload') {
-    document.getElementById('bcStartBtn').style.display = 'none';
-    document.getElementById('bcUploadLabel').style.display = 'flex';
-  } else {
-    document.getElementById('bcStartBtn').style.display = 'flex';
-    document.getElementById('bcUploadLabel').style.display = 'none';
-  }
-  document.getElementById('bcPlaceholder').style.display = 'flex';
-  document.getElementById('snapCanvas').style.display = 'none';
+async function startStickerCamera(){
+  try{
+    stickerStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}
+    });
+    const v=document.getElementById('stickerVideo');
+    v.srcObject=stickerStream; v.style.display='block';
+    document.getElementById('stickerCamArea').classList.add('show');
+    document.getElementById('scanInputArea').style.display='none';
+    document.getElementById('camBtnRow').style.display='flex';
+    setPill('📷 Camera Live','live');
+  }catch(e){showErr('Camera not available — use Upload Sticker Photo instead.');}
 }
 
-async function startBarcodeScanner() {
-  setPill('🟢 Scanner Live', 'live');
-  document.getElementById('bcStartBtn').style.display = 'none';
-  document.getElementById('bcStopBtn').style.display = 'flex';
-  document.getElementById('bcPlaceholder').style.display = 'none';
-  document.getElementById('bcOverlay').classList.add('show');
-  showBcStatus('Scanning for barcode…');
+function captureSticker(){
+  const v=document.getElementById('stickerVideo');
+  const c=document.getElementById('stickerCanvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const b64=c.toDataURL('image/jpeg',.92).split(',')[1];
+  stickerImageB64=b64;
+  cancelStickerCamera();
+  showPreview('data:image/jpeg;base64,'+b64);
+  runAIStickerRead(b64);
+}
 
-  try {
-    // Try ZXing if available
-    if (typeof ZXing !== 'undefined') {
-      codeReader = new ZXing.BrowserMultiFormatReader();
-      barcodeStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width:{ideal:1920}, height:{ideal:1080} }
-      });
-      const video = document.getElementById('videoFeed');
-      video.srcObject = barcodeStream;
-      video.style.display = 'block';
-      barcodeScanning = true;
+function cancelStickerCamera(){
+  if(stickerStream){stickerStream.getTracks().forEach(t=>t.stop());stickerStream=null;}
+  document.getElementById('stickerVideo').style.display='none';
+  document.getElementById('stickerCamArea').classList.remove('show');
+  document.getElementById('camBtnRow').style.display='none';
+  document.getElementById('scanInputArea').style.display='block';
+  setPill('📍 Ready','');
+}
 
-      codeReader.decodeFromVideoElement(video, (result, err) => {
-        if (!barcodeScanning) return;
-        if (result) {
-          const text = result.getText();
-          const vin = extractVINFromBarcode(text);
-          if (vin) {
-            barcodeScanning = false;
-            stopBarcodeScanner();
-            showBcVinConfirm(vin, 'BARCODE');
-            setPill('✓ VIN Found', 'live');
-          }
+function handleStickerUpload(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const dataUrl=ev.target.result;
+    stickerImageB64=dataUrl.split(',')[1];
+    showPreview(dataUrl);
+    runAIStickerRead(stickerImageB64);
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+function showPreview(src){
+  const w=document.getElementById('previewWrap');
+  document.getElementById('previewImg').src=src;
+  w.classList.add('show');
+  document.getElementById('scanInputArea').style.display='none';
+}
+
+function retakeSticker(){
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('extractedData').classList.remove('show');
+  document.getElementById('aiProcessing').classList.remove('show');
+  document.getElementById('scanInputArea').style.display='block';
+  document.getElementById('extAddons').innerHTML='';
+  addonExtCount=0;
+  stickerImageB64='';
+  setPill('📍 Ready','');
+}
+
+// ── CLAUDE AI VISION CALL ────────────────────────────────────────────────────
+async function runAIStickerRead(b64){
+  setPill('🤖 AI Reading…','ai');
+  document.getElementById('aiProcessing').classList.add('show');
+  document.getElementById('extractedData').classList.remove('show');
+  document.getElementById('aiStep').textContent='Analyzing sticker image…';
+
+  const prompt=`You are reading a Toyota (or other make) window sticker / Monroney label from a photo.
+
+Extract EXACTLY the following fields and return ONLY valid JSON, no markdown, no explanation:
+
+{
+  "vin": "17-character VIN string",
+  "make": "vehicle make",
+  "model": "vehicle model",
+  "year": "model year as 4-digit string",
+  "trim": "trim level",
+  "msrp": base MSRP as integer (factory price only, NO dealer add-ons, NO destination),
+  "destination": destination/delivery charge as integer or 0,
+  "doc_fee": document/processing fee as integer or 0,
+  "state": "2-letter state abbreviation from assembly point or dealer location, default FL",
+  "addons": [
+    {"name": "exact name from sticker", "price": integer},
+    ...
+  ]
+}
+
+Rules:
+- msrp = factory base price only (labeled "Base Price", "MSRP", or first price in pricing section)
+- Do NOT include destination charge in msrp
+- addons = ONLY dealer-installed items with prices (ToyoGuard, protection packages, accessories, etc)
+- Do NOT include standard equipment or options that are part of MSRP
+- doc_fee = document/processing/dealer fee if visible, else 0
+- If a field is not visible, use null for strings or 0 for numbers
+- Return ONLY the JSON object`;
+
+  try{
+    document.getElementById('aiStep').textContent='Extracting VIN, MSRP, and dealer add-ons…';
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+            {type:'text',text:prompt}
+          ]
+        }]
+      })
+    });
+
+    const data=await resp.json();
+    const text=data.content?.map(c=>c.text||'').join('').trim();
+
+    document.getElementById('aiProcessing').classList.remove('show');
+
+    // Parse JSON from response
+    const jsonMatch=text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON in response');
+    const extracted=JSON.parse(jsonMatch[0]);
+
+    populateExtracted(extracted);
+    setPill('✓ Sticker Read','live');
+
+  }catch(e){
+    document.getElementById('aiProcessing').classList.remove('show');
+    setPill('📍 Ready','');
+    showErr('AI could not read this sticker. Try a clearer photo, or use Barcode / Enter VIN tab. Error: '+e.message);
+  }
+}
+
+function populateExtracted(d){
+  document.getElementById('extVin').value=d.vin||'';
+  document.getElementById('extMsrp').value=d.msrp||'';
+  document.getElementById('extDoc').value=d.doc_fee||'';
+  document.getElementById('extState').value=d.state||'FL';
+
+  // Clear and populate add-ons
+  document.getElementById('extAddons').innerHTML='';
+  addonExtCount=0;
+  const addons=d.addons||[];
+  addons.forEach(a=>addExtAddon(a.name,a.price));
+
+  document.getElementById('extractedData').classList.add('show');
+  document.getElementById('extractedData').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function addExtAddon(name='',price=''){
+  addonExtCount++;
+  const id=addonExtCount;
+  const row=document.createElement('div');
+  row.id=`ext-addon-${id}`;
+  row.className='addon-ext-row';
+  row.innerHTML=`
+    <input type="text" class="addon-ext-name" value="${name}" placeholder="Add-on name">
+    <input type="number" class="addon-ext-price" value="${price}" placeholder="$">
+    <button class="del-x" onclick="document.getElementById('ext-addon-${id}').remove()">×</button>`;
+  document.getElementById('extAddons').appendChild(row);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 2 — BARCODE
+// ═══════════════════════════════════════════════════════════════════
+function startBarcode(){
+  document.getElementById('bcStartBtn').style.display='none';
+  document.getElementById('bcStopBtn').style.display='flex';
+  document.getElementById('bcUploadLabel').style.display='none';
+  document.getElementById('bcPlaceholder').style.display='none';
+  document.getElementById('bcOverlay').style.display='flex';
+  setPill('▦ Scanning…','ai');
+
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+  .then(stream=>{
+    bcStream=stream;
+    const v=document.getElementById('bcVideo');
+    v.srcObject=stream; v.style.display='block';
+
+    if(typeof ZXing!=='undefined'){
+      codeReader=new ZXing.BrowserMultiFormatReader();
+      codeReader.decodeFromVideoElement(v,(result,err)=>{
+        if(result){
+          const vin=extractVIN(result.getText());
+          if(vin){ stopBarcode(); showBcVin(vin); setPill('✓ VIN Found','live'); }
         }
       });
     } else {
-      // ZXing not loaded — fallback to camera + manual confirm
-      barcodeStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width:{ideal:1920}, height:{ideal:1080} }
-      });
-      const video = document.getElementById('videoFeed');
-      video.srcObject = barcodeStream;
-      video.style.display = 'block';
-      barcodeScanning = true;
-      showBcStatus('Camera live — position barcode in frame then tap Stop to read');
-      document.getElementById('bcStopBtn').textContent = '⊙ Capture';
+      setBcStatus('Camera live — tap Stop then use "Upload Photo" for barcode');
     }
-  } catch(e) {
-    showErr('Camera not available. Use "Upload Photo" to scan a barcode from your camera roll.');
-    resetBarcodeScanner();
-  }
+  })
+  .catch(()=>{showErr('Camera not available — use Upload Photo for barcode.');resetBarcode();});
 }
 
-function stopBarcodeScanner() {
-  barcodeScanning = false;
-  if (codeReader) { try { codeReader.reset(); } catch(e){} codeReader = null; }
-  if (barcodeStream) { barcodeStream.getTracks().forEach(t => t.stop()); barcodeStream = null; }
-  document.getElementById('videoFeed').style.display = 'none';
-  document.getElementById('bcOverlay').classList.remove('show');
-  document.getElementById('bcStopBtn').style.display = 'none';
-  document.getElementById('bcStatus').classList.remove('show');
-  setPill('📍 Ready', '');
+function stopBarcode(){
+  if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}
+  if(bcStream){bcStream.getTracks().forEach(t=>t.stop());bcStream=null;}
+  document.getElementById('bcVideo').style.display='none';
+  document.getElementById('bcOverlay').style.display='none';
+  document.getElementById('bcStartBtn').style.display='flex';
+  document.getElementById('bcStopBtn').style.display='none';
+  document.getElementById('bcUploadLabel').style.display='flex';
+  document.getElementById('bcPlaceholder').style.display='flex';
+  document.getElementById('bcStatusBar').style.display='none';
+  setPill('📍 Ready','');
 }
 
-function resetBarcodeScanner() {
-  stopBarcodeScanner();
-  document.getElementById('bcPlaceholder').style.display = 'flex';
-  document.getElementById('snapCanvas').style.display = 'none';
-  document.getElementById('bcStartBtn').style.display = barcodeMode === 'live' ? 'flex' : 'none';
-  document.getElementById('bcUploadLabel').style.display = barcodeMode === 'upload' ? 'flex' : 'none';
-  document.getElementById('bcRetakeBtn').style.display = 'none';
-  document.getElementById('vinConfirm').classList.remove('show');
-  detectedVIN_bc = '';
+function resetBarcode(){
+  stopBarcode();
+  document.getElementById('bcRetryBtn').style.display='none';
+  document.getElementById('bcCanvas').style.display='none';
+  document.getElementById('bcPlaceholder').style.display='flex';
+  document.getElementById('bcConfirm').style.display='none';
+  document.getElementById('bcVinField').value='';
 }
 
-async function decodeBarcodeFromFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  showBcStatus('Reading barcode from image…');
-  document.getElementById('bcPlaceholder').style.display = 'none';
-
-  // Show image preview
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = async () => {
-    const canvas = document.getElementById('snapCanvas');
-    canvas.width = img.width; canvas.height = img.height;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-    canvas.style.display = 'block';
-    URL.revokeObjectURL(url);
-
-    document.getElementById('bcRetakeBtn').style.display = 'flex';
-    document.getElementById('bcUploadLabel').style.display = 'none';
-
-    try {
-      if (typeof ZXing !== 'undefined') {
-        const reader = new ZXing.BrowserMultiFormatReader();
-        const result = await reader.decodeFromCanvas(canvas);
-        const vin = extractVINFromBarcode(result.getText());
-        hideBcStatus();
-        if (vin) {
-          showBcVinConfirm(vin, 'BARCODE');
-        } else {
-          showBcStatus('Barcode read but no VIN found — try the Photo VIN tab for text OCR');
-        }
-      } else {
-        // Fallback to OCR on the barcode image
-        hideBcStatus();
-        showBcStatus('Running text scan on image…');
-        await runOCROnCanvas(canvas, 'bc');
-      }
-    } catch(err) {
-      hideBcStatus();
-      showBcStatus('Could not read barcode — try the Photo VIN tab instead, or enter VIN manually');
+async function decodeBarcodeFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  setBcStatus('Reading barcode…');
+  const img=new Image();
+  img.onload=async()=>{
+    const c=document.getElementById('bcCanvas');
+    c.width=img.width; c.height=img.height;
+    c.getContext('2d').drawImage(img,0,0);
+    c.style.display='block';
+    document.getElementById('bcPlaceholder').style.display='none';
+    document.getElementById('bcRetryBtn').style.display='flex';
+    document.getElementById('bcUploadLabel').style.display='none';
+    try{
+      const reader=new ZXing.BrowserMultiFormatReader();
+      const result=await reader.decodeFromCanvas(c);
+      const vin=extractVIN(result.getText());
+      document.getElementById('bcStatusBar').style.display='none';
+      if(vin) showBcVin(vin);
+      else setBcStatus('Barcode read but no VIN found — switch to Scan Sticker tab for full AI read');
+    }catch(err){
+      setBcStatus('Could not read barcode — use Scan Sticker or Enter VIN tab');
     }
   };
-  img.src = url;
-  e.target.value = '';
+  img.src=URL.createObjectURL(file);
+  e.target.value='';
 }
 
-function extractVINFromBarcode(text) {
-  if (!text) return null;
-  // PDF417 on window stickers often has format: ...VIN17CHARS...
-  // Try direct 17-char VIN pattern first
-  const clean = text.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-  const match = clean.match(/[A-HJ-NPR-Z0-9]{17}/);
-  if (match) return match[0];
-
-  // Also try parsing key=value formats some stickers use
-  const vinKV = text.match(/VIN[:\s=]+([A-HJ-NPR-Z0-9]{17})/i);
-  if (vinKV) return vinKV[1].toUpperCase();
-
-  return null;
+function extractVIN(text){
+  if(!text) return null;
+  const clean=text.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');
+  const m=clean.match(/[A-HJ-NPR-Z0-9]{17}/);
+  if(m) return m[0];
+  const kv=text.match(/VIN[:\s=]+([A-HJ-NPR-Z0-9]{17})/i);
+  return kv?kv[1].toUpperCase():null;
 }
 
-function showBcVinConfirm(vin, source) {
-  detectedVIN_bc = vin;
-  const el = document.getElementById('vinConfirm');
-  const field = document.getElementById('vinConfirmField');
-  const counter = document.getElementById('vcCounter');
-  document.getElementById('vcSource').textContent = source;
-  document.getElementById('vcSource').className = 'vc-source ' + (source === 'BARCODE' ? 'barcode' : 'ocr');
-  field.value = vin;
-  counter.textContent = vin.length + ' / 17';
-  counter.className = 'vc-counter' + (vin.length === 17 ? ' ready' : '');
-  el.classList.add('show');
-  hideBcStatus();
+function showBcVin(vin){
+  document.getElementById('bcVinField').value=vin;
+  document.getElementById('bcConfirm').style.display='block';
+  document.getElementById('bcConfirm').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function onConfirmType(el) {
-  el.value = el.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-  detectedVIN_bc = el.value;
-  const counter = document.getElementById('vcCounter');
-  counter.textContent = el.value.length + ' / 17';
-  counter.className = 'vc-counter' + (el.value.length === 17 ? ' ready' : '');
+function clearBcVin(){
+  document.getElementById('bcConfirm').style.display='none';
+  document.getElementById('bcVinField').value='';
+  resetBarcode();
 }
 
-function clearVin() {
-  detectedVIN_bc = '';
-  document.getElementById('vinConfirm').classList.remove('show');
-  document.getElementById('vinConfirmField').value = '';
-  resetBarcodeScanner();
-}
-
-function showBcStatus(msg) {
-  const s = document.getElementById('bcStatus');
-  document.getElementById('bcStatusText').innerHTML = msg;
-  s.classList.add('show');
-}
-function hideBcStatus() { document.getElementById('bcStatus').classList.remove('show'); }
-
-// ═══════════════════════════════════════════════════════════════════
-// TAB 2 — PHOTO OCR (VIN text plate / door jamb / sticker)
-// ═══════════════════════════════════════════════════════════════════
-let photoMode = 'camera';
-
-function setPhotoMode(mode) {
-  photoMode = mode;
-  document.getElementById('ph-cam-btn').classList.toggle('active', mode === 'camera');
-  document.getElementById('ph-upload-btn').classList.toggle('active', mode === 'upload');
-  stopOCRCamera();
-  document.getElementById('phPlaceholder').style.display = 'flex';
-  document.getElementById('snapCanvasOCR').style.display = 'none';
-
-  if (mode === 'upload') {
-    document.getElementById('phStartBtn').style.display = 'none';
-    document.getElementById('phUploadLabel').style.display = 'flex';
-  } else {
-    document.getElementById('phStartBtn').style.display = 'flex';
-    document.getElementById('phUploadLabel').style.display = 'none';
-  }
-}
-
-async function startOCRCamera() {
-  try {
-    ocrStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width:{ideal:1920}, height:{ideal:1080} }
-    });
-    const video = document.getElementById('videoFeedOCR');
-    video.srcObject = ocrStream;
-    video.style.display = 'block';
-    document.getElementById('phPlaceholder').style.display = 'none';
-    document.getElementById('vinOverlay').classList.add('show');
-    document.getElementById('phStartBtn').style.display = 'none';
-    document.getElementById('phCaptureBtn').style.display = 'flex';
-    setPill('📷 Camera Live', 'scanning');
-  } catch(e) {
-    showErr('Camera not available — use Upload Photo instead.');
-  }
-}
-
-function stopOCRCamera() {
-  if (ocrStream) { ocrStream.getTracks().forEach(t => t.stop()); ocrStream = null; }
-  document.getElementById('videoFeedOCR').style.display = 'none';
-  document.getElementById('vinOverlay').classList.remove('show');
-  document.getElementById('phCaptureBtn').style.display = 'none';
-  document.getElementById('phStatus').classList.remove('show');
-  setPill('📍 Ready', '');
-}
-
-function captureOCR() {
-  const video = document.getElementById('videoFeedOCR');
-  const canvas = document.getElementById('snapCanvasOCR');
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  canvas.style.display = 'block';
-  stopOCRCamera();
-  document.getElementById('vinOverlay').classList.remove('show');
-  document.getElementById('phRetakeBtn').style.display = 'flex';
-  runOCROnCanvas(canvas, 'ph');
-}
-
-function resetOCRCamera() {
-  stopOCRCamera();
-  document.getElementById('snapCanvasOCR').style.display = 'none';
-  document.getElementById('phPlaceholder').style.display = 'flex';
-  document.getElementById('phRetakeBtn').style.display = 'none';
-  document.getElementById('phStartBtn').style.display = photoMode === 'camera' ? 'flex' : 'none';
-  document.getElementById('phUploadLabel').style.display = photoMode === 'upload' ? 'flex' : 'none';
-  document.getElementById('vinConfirmPhoto').classList.remove('show');
-  detectedVIN_ph = '';
-}
-
-function handleOCRUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = () => {
-    const canvas = document.getElementById('snapCanvasOCR');
-    canvas.width = img.width; canvas.height = img.height;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-    canvas.style.display = 'block';
-    document.getElementById('phPlaceholder').style.display = 'none';
-    document.getElementById('phRetakeBtn').style.display = 'flex';
-    document.getElementById('phUploadLabel').style.display = 'none';
-    URL.revokeObjectURL(url);
-    runOCROnCanvas(canvas, 'ph');
-  };
-  img.src = url;
-  e.target.value = '';
-}
-
-async function runOCROnCanvas(canvas, target) {
-  const statusId = target === 'ph' ? 'phStatus' : 'bcStatus';
-  const statusTextId = target === 'ph' ? 'phStatusText' : 'bcStatusText';
-  const pctId = target === 'ph' ? 'phPct' : null;
-
-  document.getElementById(statusId).classList.add('show');
-  document.getElementById(statusTextId).textContent = 'Reading VIN text…';
-
-  try {
-    const result = await Tesseract.recognize(canvas, 'eng', {
-      logger: m => {
-        if (m.status === 'recognizing text' && pctId) {
-          document.getElementById(pctId).textContent = Math.round(m.progress * 100) + '%';
-        }
-      },
-      tessedit_char_whitelist: 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789',
-    });
-
-    document.getElementById(statusId).classList.remove('show');
-
-    const raw = result.data.text.replace(/[^A-HJ-NPR-Z0-9]/gi, '').toUpperCase();
-    const vinMatch = raw.match(/[A-HJ-NPR-Z0-9]{17}/);
-    const vin = vinMatch ? vinMatch[0] : '';
-
-    if (target === 'ph') {
-      showPhotoVinConfirm(vin);
-    } else {
-      showBcVinConfirm(vin || '', 'OCR TEXT');
-      if (!vin) showBcStatus('Could not read VIN — type it in the field above');
-    }
-  } catch(e) {
-    document.getElementById(statusId).classList.remove('show');
-    showErr('OCR failed — please enter VIN manually.');
-  }
-}
-
-function showPhotoVinConfirm(vin) {
-  detectedVIN_ph = vin;
-  const el = document.getElementById('vinConfirmPhoto');
-  const field = document.getElementById('vinConfirmPhotoField');
-  const counter = document.getElementById('vcCounterPhoto');
-  field.value = vin;
-  counter.textContent = vin.length + ' / 17';
-  counter.className = 'vc-counter' + (vin.length === 17 ? ' ready' : '');
-  el.classList.add('show');
-  if (!vin) {
-    document.getElementById('phStatus').classList.add('show');
-    document.getElementById('phStatusText').innerHTML = 'VIN not detected — <b style="color:var(--amber)">type or correct in the field above</b>';
-  }
-}
-
-function onConfirmTypePhoto(el) {
-  el.value = el.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-  detectedVIN_ph = el.value;
-  const counter = document.getElementById('vcCounterPhoto');
-  counter.textContent = el.value.length + ' / 17';
-  counter.className = 'vc-counter' + (el.value.length === 17 ? ' ready' : '');
-}
-
-function clearVinPhoto() {
-  detectedVIN_ph = '';
-  document.getElementById('vinConfirmPhoto').classList.remove('show');
-  document.getElementById('vinConfirmPhotoField').value = '';
-  resetOCRCamera();
+function setBcStatus(msg){
+  const s=document.getElementById('bcStatusBar');
+  s.textContent=msg; s.style.display='block';
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// TAB 3 — MANUAL VIN
+// TAB 3 — MANUAL
 // ═══════════════════════════════════════════════════════════════════
-function onVinType(el) {
-  el.value = el.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
-  const counter = document.getElementById('vinCounter');
-  counter.textContent = el.value.length + ' / 17';
-  counter.className = 'vin-counter' + (el.value.length === 17 ? ' ready' : '');
+function onVinType(el){
+  el.value=el.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');
+  const c=document.getElementById('vinCtr');
+  c.textContent=el.value.length+' / 17';
+  c.className='vc'+(el.value.length===17?' ready':'');
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ADD-ON ROWS
-// ═══════════════════════════════════════════════════════════════════
-function addRow(name='', price='') {
-  addonCount++;
-  const id = addonCount;
-  const row = document.createElement('div');
-  row.id = `addon-${id}`;
-  row.className = 'addon-row';
-  row.innerHTML = `
-    <input type="text" class="nf addon-name" placeholder="Option name (e.g. Dashcam)" value="${name}">
-    <input type="number" class="nf addon-price" placeholder="$" value="${price}" style="width:90px">
-    <button class="del-btn" onclick="document.getElementById('addon-${id}').remove()">×</button>`;
+let manualAddonCount=0;
+function addManualRow(name='',price=''){
+  manualAddonCount++;
+  const id=manualAddonCount;
+  const row=document.createElement('div');
+  row.id=`mar-${id}`; row.className='ar';
+  row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='7px'; row.style.alignItems='center';
+  row.innerHTML=`
+    <input type="text" class="nf" style="flex:1;font-size:13px;letter-spacing:0" value="${name}" placeholder="Option name (e.g. Dashcam)">
+    <input type="number" class="nf" style="width:85px;font-size:13px" value="${price}" placeholder="$">
+    <button class="del-x" onclick="document.getElementById('mar-${id}').remove()">×</button>`;
   document.getElementById('addonRows').appendChild(row);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // CLASSIFY
 // ═══════════════════════════════════════════════════════════════════
-function classify(name) {
-  const low = name.toLowerCase();
-  for (const [key, info] of Object.entries(ADDON_INTEL)) {
-    if (low.includes(key)) return { ...info };
-  }
-  return { cat:'neg', disc:35, note:'Regional dealer option. Typical 2–3× markup.' };
+function classify(name){
+  const low=name.toLowerCase();
+  for(const[k,v] of Object.entries(ADDON_INTEL)) if(low.includes(k)) return{...v};
+  return{cat:'neg',disc:35,note:'Regional dealer option. Typical 2–3× markup.'};
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // ANALYZE
 // ═══════════════════════════════════════════════════════════════════
-async function analyze() {
+async function analyze(){
   hideErr();
-  let vin='', msrp=0, doc=0, state='FL';
+  let vin='',msrp=0,doc=0,state='FL',addons=[];
 
-  if (activeTab === 'barcode') {
-    vin   = (document.getElementById('vinConfirmField').value || detectedVIN_bc || '').toUpperCase().trim();
-    msrp  = parseFloat(document.getElementById('msrpBC').value) || 0;
-    doc   = parseFloat(document.getElementById('docBC').value)  || 0;
-    state = (document.getElementById('stateBC').value || 'FL').toUpperCase();
-  } else if (activeTab === 'photo') {
-    vin   = (document.getElementById('vinConfirmPhotoField').value || detectedVIN_ph || '').toUpperCase().trim();
-    msrp  = parseFloat(document.getElementById('msrpPhoto').value) || 0;
-    doc   = parseFloat(document.getElementById('docPhoto').value)  || 0;
-    state = (document.getElementById('statePhoto').value || 'FL').toUpperCase();
+  if(activeTab==='scan'){
+    vin=(document.getElementById('extVin').value||'').toUpperCase().trim();
+    msrp=parseFloat(document.getElementById('extMsrp').value)||0;
+    doc=parseFloat(document.getElementById('extDoc').value)||0;
+    state=(document.getElementById('extState').value||'FL').toUpperCase();
+    document.querySelectorAll('#extAddons .addon-ext-row').forEach(row=>{
+      const n=row.querySelector('.addon-ext-name')?.value?.trim();
+      const p=parseFloat(row.querySelector('.addon-ext-price')?.value)||0;
+      if(n&&p>0) addons.push({name:n,price:p,...classify(n)});
+    });
+    if(!stickerImageB64&&!vin){showErr('Take or upload a sticker photo first.');return;}
+  } else if(activeTab==='barcode'){
+    vin=(document.getElementById('bcVinField').value||'').toUpperCase().trim();
+    msrp=parseFloat(document.getElementById('bcMsrp').value)||0;
+    doc=parseFloat(document.getElementById('bcDoc').value)||0;
+    state=(document.getElementById('bcState').value||'FL').toUpperCase();
   } else {
-    vin   = document.getElementById('vinManual').value.trim().toUpperCase();
-    msrp  = parseFloat(document.getElementById('msrpManual').value) || 0;
-    doc   = parseFloat(document.getElementById('docManual').value)  || 0;
-    state = (document.getElementById('stateManual').value || 'FL').toUpperCase();
+    vin=document.getElementById('vinManual').value.trim().toUpperCase();
+    msrp=parseFloat(document.getElementById('msrpManual').value)||0;
+    doc=parseFloat(document.getElementById('docManual').value)||0;
+    state=(document.getElementById('stateManual').value||'FL').toUpperCase();
+    document.querySelectorAll('#addonRows .ar').forEach(row=>{
+      const inputs=row.querySelectorAll('input');
+      const n=inputs[0]?.value?.trim();
+      const p=parseFloat(inputs[1]?.value)||0;
+      if(n&&p>0) addons.push({name:n,price:p,...classify(n)});
+    });
   }
 
-  if (vin.length !== 17) {
-    showErr('VIN must be 17 characters. Check the VIN field and correct any misread characters.');
-    return;
-  }
-  if (msrp === 0) {
-    showErr('Enter the Base MSRP — the factory price before dealer add-ons, from the sticker.');
-    return;
-  }
+  if(vin.length!==17){showErr('VIN must be 17 characters. Check the VIN field.');return;}
+  if(msrp===0){showErr('Base MSRP is required. Enter the factory price from the sticker.');return;}
 
-  const addons = [];
-  document.querySelectorAll('#addonRows .addon-row').forEach(row => {
-    const n = row.querySelector('.addon-name')?.value?.trim();
-    const p = parseFloat(row.querySelector('.addon-price')?.value) || 0;
-    if (n && p > 0) addons.push({ name:n, price:p, ...classify(n) });
-  });
+  const btn=document.getElementById('goBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Decoding VIN…';
 
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Decoding VIN…';
+  let vehicle=null;
+  try{
+    const r=await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${vin}?format=json`);
+    const d=await r.json();
+    if(d.Results) vehicle=d.Results[0];
+  }catch(e){}
 
-  let vehicle = null;
-  try {
-    const r = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${vin}?format=json`);
-    const d = await r.json();
-    if (d.Results) vehicle = d.Results[0];
-  } catch(e) {}
+  btn.disabled=false;
+  btn.innerHTML='<span>⚡</span> Get My TrueOTD Price';
 
-  btn.disabled = false;
-  btn.innerHTML = '<span>⚡</span> Get My TrueOTD Price';
-
-  // Show vehicle name and ask user to confirm it's right before rendering
-  if (vehicle && vehicle.Make && vehicle.Model) {
-    const yr = vehicle.ModelYear || '';
-    const mk = vehicle.Make || '';
-    const mo = vehicle.Model || '';
-    const confirmed = confirm(`VIN decoded as: ${yr} ${mk} ${mo}\n\nIs this the correct vehicle?`);
-    if (!confirmed) {
-      showErr('VIN did not match your vehicle. Check the VIN and correct any misread characters, then try again.');
-      return;
-    }
+  if(vehicle&&vehicle.Make&&vehicle.Model){
+    const label=`${vehicle.ModelYear||''} ${vehicle.Make} ${vehicle.Model}`;
+    const ok=confirm(`VIN decoded as:\n\n${label}\n\nIs this correct?`);
+    if(!ok){showErr('VIN mismatch — correct the VIN in the field and try again.');return;}
   }
 
-  render(vehicle, vin, msrp, doc, state, addons);
+  render(vehicle,vin,msrp,doc,state,addons);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════════════════════
-function render(v, vin, msrp, doc, state, addons) {
-  const tax  = TAX[state] ?? 0.06;
-  const reg  = REG[state] ?? 175;
-  const docT = doc * 0.50;
+function render(v,vin,msrp,doc,state,addons){
+  const tax=TAX[state]??0.06;
+  const reg=REG[state]??175;
+  const docT=doc*0.5;
+  const refItems=addons.filter(a=>a.cat==='ref');
+  const negItems=addons.filter(a=>a.cat==='neg');
+  const negSavings=negItems.reduce((s,a)=>s+a.price*(a.disc/100),0);
+  const negTotal=negItems.reduce((s,a)=>s+a.price,0);
+  const stickerBase=msrp+addons.reduce((s,a)=>s+a.price,0)+doc;
+  const stickerOTD=stickerBase+stickerBase*tax+reg;
+  const gcBase=msrp+(negTotal-negSavings)+docT;
+  const gcOTD=gcBase+gcBase*tax+reg;
+  const savings=stickerOTD-gcOTD;
+  const savPct=(savings/stickerOTD*100).toFixed(1);
+  const f=n=>'$'+Math.round(n).toLocaleString();
+  const yr=v?.ModelYear||'—';
+  const make=v?.Make||'—';
+  const model=v?.Model||'—';
+  const trim=v?.Trim||v?.Series||'';
+  const eng=v?.DisplacementL?`${v.DisplacementL}L ${v.FuelTypePrimary||''}`:(v?.FuelTypePrimary||'—');
+  const drive=v?.DriveType||'—';
+  const plant=v?.PlantCity?`${v.PlantCity}, ${v.PlantState}`:'—';
 
-  const refItems = addons.filter(a => a.cat === 'ref');
-  const negItems = addons.filter(a => a.cat === 'neg');
-  const negSavings = negItems.reduce((s,a) => s + a.price*(a.disc/100), 0);
-  const negTotal   = negItems.reduce((s,a) => s + a.price, 0);
-
-  const stickerBase = msrp + addons.reduce((s,a)=>s+a.price,0) + doc;
-  const stickerOTD  = stickerBase + stickerBase*tax + reg;
-  const gcBase      = msrp + (negTotal - negSavings) + docT;
-  const gcOTD       = gcBase + gcBase*tax + reg;
-  const savings     = stickerOTD - gcOTD;
-  const savPct      = (savings/stickerOTD*100).toFixed(1);
-
-  const f  = n => '$' + Math.round(n).toLocaleString();
-  const yr    = v?.ModelYear || '—';
-  const make  = v?.Make      || '—';
-  const model = v?.Model     || '—';
-  const trim  = v?.Trim || v?.Series || '';
-  const eng   = v?.DisplacementL ? `${v.DisplacementL}L ${v.FuelTypePrimary||''}` : (v?.FuelTypePrimary||'—');
-  const drive = v?.DriveType || '—';
-  const plant = v?.PlantCity ? `${v.PlantCity}, ${v.PlantState}` : '—';
-
-  let html = '';
-
-  html += `<div class="hero">
+  let h='';
+  h+=`<div class="hero">
     <div class="hcell main">
       <div class="hc-l">TrueOTD Target — All In</div>
       <div class="hc-v lime">${f(gcOTD)}</div>
@@ -1019,7 +858,7 @@ function render(v, vin, msrp, doc, state, addons) {
     <div class="hcell">
       <div class="hc-l">Sticker OTD</div>
       <div class="hc-v dim">${f(stickerOTD)}</div>
-      <div class="hc-s">If you sign today without negotiating</div>
+      <div class="hc-s">If you sign without negotiating</div>
     </div>
     <div class="hcell">
       <div class="hc-l">You Can Save</div>
@@ -1028,8 +867,8 @@ function render(v, vin, msrp, doc, state, addons) {
     </div>
   </div>`;
 
-  if (v && v.Make) {
-    html += `<div class="vstrip">
+  if(v&&v.Make){
+    h+=`<div class="vstrip">
       <div>
         <div class="vtitle">${yr} ${make} ${model}${trim?' · '+trim:''}</div>
         <div class="vmeta">
@@ -1039,66 +878,51 @@ function render(v, vin, msrp, doc, state, addons) {
           <div class="vchip"><b>Built</b> ${plant}</div>
         </div>
       </div>
-      <div class="mkt-tag">⚠ Dealer Add-Ons Detected</div>
+      <div class="mkt-tag">⚠ Add-Ons Detected</div>
     </div>`;
   }
 
-  html += `<div class="tbl-wrap"><table>
+  h+=`<div class="tbl-wrap"><table>
     <thead><tr><th>Item</th><th>Action</th><th>Sticker</th><th>Target</th><th>Save</th></tr></thead><tbody>`;
-
-  html += `<tr class="row-pay"><td><div class="iname">Base MSRP</div><div class="inote">Factory price · non-negotiable in current market</div></td><td><span class="tag t-pay">PAY</span></td><td>${f(msrp)}</td><td class="lime">${f(msrp)}</td><td>—</td></tr>`;
-
-  negItems.forEach(a => {
-    const t = Math.round(a.price*(1-a.disc/100));
-    html += `<tr class="row-neg"><td><div class="iname">${a.name}</div><div class="inote">${a.note}</div></td><td><span class="tag t-neg">NEGOTIATE</span></td><td class="strike">${f(a.price)}</td><td class="amber">${f(t)}</td><td class="amber">−${a.disc}%</td></tr>`;
+  h+=`<tr class="row-pay"><td><div class="iname">Base MSRP</div><div class="inote">Factory price · non-negotiable</div></td><td><span class="tag t-pay">PAY</span></td><td>${f(msrp)}</td><td class="lime">${f(msrp)}</td><td>—</td></tr>`;
+  negItems.forEach(a=>{
+    const t=Math.round(a.price*(1-a.disc/100));
+    h+=`<tr class="row-neg"><td><div class="iname">${a.name}</div><div class="inote">${a.note}</div></td><td><span class="tag t-neg">NEGOTIATE</span></td><td class="strike">${f(a.price)}</td><td class="amber">${f(t)}</td><td class="amber">−${a.disc}%</td></tr>`;
   });
-
-  if (doc > 0) {
-    html += `<tr class="row-neg"><td><div class="iname">Doc / Processing Fee</div><div class="inote">${state} avg $699–$999 · not legally mandated</div></td><td><span class="tag t-neg">NEGOTIATE</span></td><td class="strike">${f(doc)}</td><td class="amber">${f(docT)}</td><td class="amber">−50%</td></tr>`;
-  }
-
-  refItems.forEach(a => {
-    html += `<tr class="row-ref"><td><div class="iname">${a.name}</div><div class="inote">${a.note}</div></td><td><span class="tag t-ref">REFUSE</span></td><td class="strike">${f(a.price)}</td><td class="red">$0</td><td class="red">−100%</td></tr>`;
+  if(doc>0) h+=`<tr class="row-neg"><td><div class="iname">Doc / Processing Fee</div><div class="inote">${state} avg $699–$999 · not legally mandated</div></td><td><span class="tag t-neg">NEGOTIATE</span></td><td class="strike">${f(doc)}</td><td class="amber">${f(docT)}</td><td class="amber">−50%</td></tr>`;
+  refItems.forEach(a=>{
+    h+=`<tr class="row-ref"><td><div class="iname">${a.name}</div><div class="inote">${a.note}</div></td><td><span class="tag t-ref">REFUSE</span></td><td class="strike">${f(a.price)}</td><td class="red">$0</td><td class="red">−100%</td></tr>`;
   });
-
-  html += `<tr class="row-fix"><td><div class="iname">${state} Sales Tax (${(tax*100).toFixed(2)}%)</div><div class="inote">Applied to negotiated base — lower base = less tax owed</div></td><td><span class="tag t-fix">FIXED</span></td><td>${f(stickerBase*tax)}</td><td class="lime">${f(gcBase*tax)}</td><td class="lime">${f((stickerBase-gcBase)*tax)} less</td></tr>
-  <tr class="row-fix"><td><div class="iname">${state} Reg / Title / Tags (est.)</div><div class="inote">DMV fees — cannot be negotiated</div></td><td><span class="tag t-fix">FIXED</span></td><td>${f(reg)}</td><td>${f(reg)}</td><td>—</td></tr>
+  h+=`<tr class="row-fix"><td><div class="iname">${state} Sales Tax (${(tax*100).toFixed(2)}%)</div><div class="inote">On negotiated base — lower base = less tax</div></td><td><span class="tag t-fix">FIXED</span></td><td>${f(stickerBase*tax)}</td><td class="lime">${f(gcBase*tax)}</td><td class="lime">${f((stickerBase-gcBase)*tax)} less</td></tr>
+  <tr class="row-fix"><td><div class="iname">${state} Reg / Title / Tags</div><div class="inote">DMV fees — cannot be negotiated</div></td><td><span class="tag t-fix">FIXED</span></td><td>${f(reg)}</td><td>${f(reg)}</td><td>—</td></tr>
   <tr class="row-sticker"><td colspan="2"><div class="iname">Sticker OTD — no negotiation</div></td><td colspan="2" class="strike">${f(stickerOTD)}</td><td></td></tr>
   <tr class="row-total"><td colspan="2"><div class="iname lime" style="font-size:14px">✓ GutCheck TrueOTD Target</div></td><td colspan="2" class="lime" style="font-size:16px;font-weight:700">${f(gcOTD)}</td><td class="lime">${f(savings)} saved</td></tr>
   </tbody></table></div>`;
 
-  html += `<div class="play">
+  h+=`<div class="play">
     <div class="play-hdr">Negotiation Playbook</div>
     <div class="steps">
       <div class="step"><div class="sn">1</div><div class="st"><b>Lead with TrueOTD.</b> "My number is <span class="m">${f(gcOTD)}</span> all-in. Can you do that today?"</div></div>
       <div class="step"><div class="sn">2</div><div class="st"><b>Refuse junk immediately.</b> Screen protectors, cables, emergency kits — "Remove these. $0."</div></div>
-      <div class="step"><div class="sn">3</div><div class="st"><b>Challenge add-on bundles.</b> "What did you pay SET for this?" Offer <span class="m">$300</span> max or cut it.</div></div>
-      <div class="step"><div class="sn">4</div><div class="st"><b>Attack the doc fee.</b> "${state} avg is under $1,000. I'll pay <span class="m">${f(docT)}</span> — not more."</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><b>Challenge add-on bundles.</b> "What did you pay for this?" Offer <span class="m">$300</span> max or cut it.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><b>Attack the doc fee.</b> "I'll pay <span class="m">${f(docT)}</span> — not more."</div></div>
       <div class="step"><div class="sn">5</div><div class="st"><b>Get competing quotes.</b> Other dealers within 90 min. One phone call costs nothing.</div></div>
       <div class="step"><div class="sn">6</div><div class="st"><b>Walk if needed.</b> Leave your number. End-of-month = 60% chance of a callback within 48 hrs.</div></div>
     </div>
-    <div class="foot">GutCheck TrueOTD · VIN via NHTSA vPIC · ${state} tax ${(tax*100).toFixed(2)}% · Reg est. ${f(reg)} · Reference only · Not legal advice</div>
+    <div class="foot">GutCheck TrueOTD · NHTSA vPIC + Claude AI Vision · ${state} tax ${(tax*100).toFixed(2)}% · Reg est. ${f(reg)} · Reference only</div>
   </div>`;
 
-  const el = document.getElementById('results');
-  el.innerHTML = html;
-  el.scrollIntoView({ behavior:'smooth', block:'start' });
+  const el=document.getElementById('results');
+  el.innerHTML=h;
+  el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ═══════════════════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════════════════
-function setPill(text, cls) {
-  const p = document.getElementById('statusPill');
-  p.textContent = text;
-  p.className = 'status-pill' + (cls ? ' ' + cls : '');
-}
-function showErr(msg) {
-  const e = document.getElementById('errBar');
-  e.textContent = msg; e.classList.add('show');
-  e.scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-function hideErr() { document.getElementById('errBar').classList.remove('show'); }
+function setPill(t,c){const p=document.getElementById('spill');p.textContent=t;p.className='spill'+(c?' '+c:'');}
+function showErr(m){const e=document.getElementById('errBar');e.textContent=m;e.classList.add('show');e.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function hideErr(){document.getElementById('errBar').classList.remove('show');}
 </script>
 </body>
 </html>
